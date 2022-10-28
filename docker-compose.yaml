@@ -1,0 +1,97 @@
+services:
+  # rabbitmq:
+  #   image: rabbitmq:3.9-management
+  #   hostname: rabbitmq
+  #   ports:
+  #     - 5672:5672
+  #     - 15672:15672
+  #   volumes:
+  #     - rabbitmq_data:/var/lib/rabbitmq/
+  #     - rabbitmq_log:/var/log/rabbitmq/
+  #   networks:
+  #     - rabbitmq_net
+
+  mongo:
+    image: mongo
+    restart: always
+    ports:
+      - 27017:27017
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - mongo_net
+
+  redis:
+    image: redis
+    restart: always
+    ports:
+      - 6379:6379
+    command: redis-server --save 60 10 --loglevel warning
+    volumes: 
+      - redis:/data
+    networks:
+      - redis_net
+
+  # transaction-checker:
+  #   build: ./transaction-checker
+  #   entrypoint: sh -c "npm install && npm start"
+  #   restart: always
+  #   environment:
+  #     - MONGODB_URL=mongodb://mongo:27017/transactions
+  #     - AMQP_SERVER_URI=amqp://guest:guest@rabbitmq:5672
+  #     - QUEUE_NAME=transactions
+  #   volumes:
+  #     - ./transaction-checker:/home/node/app
+  #   depends_on:
+  #     - rabbitmq
+  #     - mongo
+  #   networks:
+  #     - rabbitmq_net
+  #     - mongo_net
+
+  # transaction-generator:
+  #   build: ./transaction-generator
+  #   entrypoint: sh -c "npm install && npm start"
+  #   restart: always
+  #   environment:
+  #     - AMQP_SERVER_URI=amqp://guest:guest@rabbitmq:5672
+  #     - QUEUE_NAME=transactions
+  #   volumes:
+  #     - ./transaction-generator:/home/node/app
+  #   depends_on:
+  #     - rabbitmq
+  #   networks:
+  #     - rabbitmq_net
+
+  transaction-api:
+    build: ./transaction-api
+    entrypoint: sh -c "npm install && npm run dev"
+    restart: always
+    ports:
+      - 5000:5000
+    environment:
+      - REDIS_URL=redis://redis:6379
+    volumes:
+      - ./transaction-api:/home/node/app
+    depends_on:
+      - mongo
+      - redis
+    networks:
+      - mongo_net
+      - redis_net
+
+volumes:
+    # rabbitmq_data:
+    # rabbitmq_log:
+    mongodb_data:
+    redis:
+
+networks:
+  # rabbitmq_net:
+  #   driver: bridge
+
+  mongo_net:
+    driver: bridge
+  
+  redis_net:
+    driver: bridge
