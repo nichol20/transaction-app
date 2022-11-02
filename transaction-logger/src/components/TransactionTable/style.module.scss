@@ -1,0 +1,23 @@
+@use '../../styles/mixins';
+@use '../../styles/colors';
+
+.transaction_table {
+  width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 20px;
+  border: 2px solid #444;
+
+  .header {
+    @include  mixins.displayFlex();
+    max-width: 100%;
+    padding: 10px;
+    background: #999;
+    border-bottom: 2px solid #444;
+
+    .column{
+      width: 100%;
+      text-align: center;
+    }
+  }
+}

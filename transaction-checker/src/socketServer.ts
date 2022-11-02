@@ -6,7 +6,7 @@ export default class SocketServer {
   constructor(port: number) {
     this._io = new Server(port, {
       cors: {
-        origin: ["http://localhost:3000"]
+        origin: process.env.SOCKET_ORIGIN_URL
       }
     })
     this._io.on('connection', socket => console.log('Web socket connection created'))

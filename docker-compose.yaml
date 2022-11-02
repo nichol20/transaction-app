@@ -1,15 +1,15 @@
 services:
-  # rabbitmq:
-  #   image: rabbitmq:3.9-management
-  #   hostname: rabbitmq
-  #   ports:
-  #     - 5672:5672
-  #     - 15672:15672
-  #   volumes:
-  #     - rabbitmq_data:/var/lib/rabbitmq/
-  #     - rabbitmq_log:/var/log/rabbitmq/
-  #   networks:
-  #     - rabbitmq_net
+  rabbitmq:
+    image: rabbitmq:3.9-management
+    hostname: rabbitmq
+    ports:
+      - 5672:5672
+      - 15672:15672
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq/
+      - rabbitmq_log:/var/log/rabbitmq/
+    networks:
+      - rabbitmq_net
 
   mongo:
     image: mongo
@@ -32,40 +32,44 @@ services:
     networks:
       - redis_net
 
-  # transaction-checker:
-  #   build: ./transaction-checker
-  #   entrypoint: sh -c "npm install && npm start"
-  #   restart: always
-  #   environment:
-  #     - MONGODB_URL=mongodb://mongo:27017/transactions
-  #     - AMQP_SERVER_URI=amqp://guest:guest@rabbitmq:5672
-  #     - QUEUE_NAME=transactions
-  #   volumes:
-  #     - ./transaction-checker:/home/node/app
-  #   depends_on:
-  #     - rabbitmq
-  #     - mongo
-  #   networks:
-  #     - rabbitmq_net
-  #     - mongo_net
+  transaction-checker:
+    build: .
+    entrypoint: ./.docker/entrypoint.sh
+    restart: always
+    ports:
+      - 4000:4000
+    environment:
+      - MONGODB_URL=mongodb://mongo:27017/transactions
+      - AMQP_SERVER_URI=amqp://guest:guest@rabbitmq:5672
+      - QUEUE_NAME=transactions
+      - SOCKET_ORIGIN_URL=http://localhost:3000
+    volumes:
+      - ./transaction-checker:/home/node/app
+    depends_on:
+      - rabbitmq
+      - mongo
+    networks:
+      - rabbitmq_net
+      - mongo_net
+      - socket_net
 
-  # transaction-generator:
-  #   build: ./transaction-generator
-  #   entrypoint: sh -c "npm install && npm start"
-  #   restart: always
-  #   environment:
-  #     - AMQP_SERVER_URI=amqp://guest:guest@rabbitmq:5672
-  #     - QUEUE_NAME=transactions
-  #   volumes:
-  #     - ./transaction-generator:/home/node/app
-  #   depends_on:
-  #     - rabbitmq
-  #   networks:
-  #     - rabbitmq_net
+  transaction-generator:
+    build: .
+    entrypoint: ./.docker/entrypoint.sh
+    restart: always
+    environment:
+      - AMQP_SERVER_URI=amqp://guest:guest@rabbitmq:5672
+      - QUEUE_NAME=transactions
+    volumes:
+      - ./transaction-generator:/home/node/app
+    depends_on:
+      - rabbitmq
+    networks:
+      - rabbitmq_net
 
   transaction-api:
-    build: ./transaction-api
-    entrypoint: sh -c "npm install && npm run dev"
+    build: .
+    entrypoint: ./.docker/entrypoint.sh
     restart: always
     ports:
       - 5000:5000
@@ -79,19 +83,40 @@ services:
     networks:
       - mongo_net
       - redis_net
+      - api_net
+
+  transaction-logger:
+    build: .
+    entrypoint: ./.docker/entrypoint.sh
+    restart: always
+    ports:
+      - 3000:3000
+    volumes:
+      - ./transaction-logger:/home/node/app
+    networks:
+      - api_net
+      - socket_net
+    depends_on:
+      - transaction-checker
 
 volumes:
-    # rabbitmq_data:
-    # rabbitmq_log:
+    rabbitmq_data:
+    rabbitmq_log:
     mongodb_data:
     redis:
 
 networks:
-  # rabbitmq_net:
-  #   driver: bridge
+  rabbitmq_net:
+    driver: bridge
 
   mongo_net:
     driver: bridge
   
   redis_net:
+    driver: bridge
+  
+  api_net:
+    driver: bridge
+  
+  socket_net:
     driver: bridge

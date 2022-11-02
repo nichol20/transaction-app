@@ -6,7 +6,7 @@ import SocketServer from "./socketServer"
 
 async function bootstrap() {
   const rabbitmqServer = new RabbitmqServer(process.env.AMQP_SERVER_URI)
-  const socketServer = new SocketServer(5000)
+  const socketServer = new SocketServer(4000)
   
   await rabbitmqServer.start()
   await rabbitmqServer.assertQueue(process.env.QUEUE_NAME)
@@ -15,7 +15,7 @@ async function bootstrap() {
   rabbitmqServer.consume(process.env.QUEUE_NAME, async message => {
     const transactionController = new TransactionController
     const jsonContent = JSON.parse(message.content.toString())
-    const newTransaction: Transaction = {
+    let newTransaction: Transaction = {
       ...jsonContent,
       status: TransactionStatus.UNDETERMINED,
       author: {
@@ -30,11 +30,12 @@ async function bootstrap() {
 
     if(transactionController.isTransactionValid(newTransaction)) {
       newTransaction.status = TransactionStatus.VALID  
-      await transactionController.save(newTransaction)
+      newTransaction = await transactionController.save(newTransaction)
     } else {
       newTransaction.status = TransactionStatus.INVALID
     }
 
+    console.log('consumed')
     socketServer.emit('new-transaction', newTransaction)
     rabbitmqServer.ack(message)
   })

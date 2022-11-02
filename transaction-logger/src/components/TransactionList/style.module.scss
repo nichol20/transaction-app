@@ -1,0 +1,90 @@
+@use '../../styles/mixins';
+@use '../../styles/colors';
+
+.transaciont_list {
+  display: flex;
+  flex-direction: column;
+
+  .transaction {
+    color: #fff;
+    width: 100%;
+    position: relative;
+
+    .main {
+      @include  mixins.displayFlex();
+      border-bottom: 1px solid #fff;
+      cursor: pointer;
+      padding: 10px;
+      transition: .3s;
+
+      &.invalid {
+        background: colors.$invalid;
+        &:hover {
+          background: colors.$invalidHover;
+        }
+      }
+  
+      &.valid {
+        background: colors.$valid;
+        &:hover {
+          background: colors.$validHover;
+        }
+      }
+    
+      div {
+        width: 100%;
+        text-align: center;
+      }
+    }
+
+    .details {
+      background: colors.$secondaryColor;
+      color: colors.$textColor;
+      gap: 50px;
+      font-size: .925em;
+      transition: .3s;
+      overflow: hidden;
+      height: 0px;
+      padding: 0px;
+
+      &.active {
+        @include mixins.displayFlex(center, flex-start);
+        padding: 20px 10px;
+        height: 215px;
+      }
+
+      .column {
+        @include mixins.displayFlex(flex-start, flex-start);
+        flex-direction: column;
+        gap: 5px;
+
+        h3 {
+          width: 100%;
+          text-align: center;
+        }
+
+        .row {
+          display: grid;
+          grid-template-columns: 70px 200px;
+          grid-template-rows: 1fr;
+
+          .field {
+            background: #fff;
+            padding: 4px 12px;
+            border-radius: 8px;
+          }
+        }
+
+        &.person_column > .row {
+          grid-template-columns: 120px 200px;
+          grid-template-rows: 1fr;
+        }
+
+        &.transaction_column > .row {
+          grid-template-columns: 70px 250px;
+          grid-template-rows: 1fr;
+        }
+      }
+    }
+  }
+}

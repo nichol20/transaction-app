@@ -28,7 +28,7 @@ async function generateTransactions() {
     )
 
     rabbitmqServer.publishInQueue(process.env.QUEUE_NAME, JSON.stringify(transaction))
-    await sleep(1000)
+    await sleep(15000)
   }
 }
 
