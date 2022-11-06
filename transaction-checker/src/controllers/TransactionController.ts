@@ -1,21 +1,6 @@
-import { TransactionStatus } from "../enums/TransactionStatus"
+import { Types } from "mongoose"
 import { TransactionModel } from "../models/TransactionModel"
-
-export interface Transaction {
-  author: {
-    cpf: string
-    fullName: string
-    phoneNumber: string
-    birthDate: Date
-  }
-  creditCard: {
-    number: number
-    validity: Date
-    cvv: number
-  }
-  value: string,
-  status: TransactionStatus
-}
+import { Transaction } from "../types/transaction"
 
 export class TransactionController {
 
@@ -79,7 +64,7 @@ export class TransactionController {
       && this._isCpfValid(transaction.author.cpf)
   }
 
-  async save(transaction: Transaction): Promise<Transaction> {
+  async save(transaction: Transaction): Promise<Transaction & { _id: Types.ObjectId }> {
     return TransactionModel.create(transaction)
   }
 }

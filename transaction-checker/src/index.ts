@@ -1,8 +1,10 @@
+import { Document, Types } from "mongoose"
 import { connectToMongoDb } from "./config/db"
-import { Transaction, TransactionController } from "./controllers/TransactionController"
+import { TransactionController } from "./controllers/TransactionController"
 import { TransactionStatus } from "./enums/TransactionStatus"
 import RabbitmqServer from "./rabbitmqServer"
 import SocketServer from "./socketServer"
+import { Transaction } from "./types/transaction"
 
 async function bootstrap() {
   const rabbitmqServer = new RabbitmqServer(process.env.AMQP_SERVER_URI)
@@ -15,7 +17,8 @@ async function bootstrap() {
   rabbitmqServer.consume(process.env.QUEUE_NAME, async message => {
     const transactionController = new TransactionController
     const jsonContent = JSON.parse(message.content.toString())
-    let newTransaction: Transaction = {
+
+    let newTransaction: Transaction | Transaction & { _id: Types.ObjectId } = {
       ...jsonContent,
       status: TransactionStatus.UNDETERMINED,
       author: {
@@ -35,7 +38,6 @@ async function bootstrap() {
       newTransaction.status = TransactionStatus.INVALID
     }
 
-    console.log('consumed')
     socketServer.emit('new-transaction', newTransaction)
     rabbitmqServer.ack(message)
   })

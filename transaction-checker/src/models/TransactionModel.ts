@@ -1,5 +1,5 @@
 import { model, Schema } from 'mongoose'
-import { Transaction } from '../controllers/TransactionController'
+import { Transaction } from '../types/transaction'
 
 const transactionSchema = new Schema<Transaction>({
   author: {

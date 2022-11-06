@@ -17,7 +17,39 @@ export class Person {
     this.birthDate = birthDate
   }
 
+  private _generateValidCpf() {
+    let nums = []
+    let str = ''
+    let sum = 0
+
+    for(let i = 0; i < 9; i++) {
+      const rn = randomNumber(0, 9)
+      nums.push(rn)
+      sum += rn * (10 - i)
+      if(i % 3 === 0 && i !== 0) str += '.'
+      str += rn
+    }
+
+    let fd = sum * 10 % 11
+    fd = fd === 10 ? 0 : fd
+    nums.push(fd)
+    str += '-' + fd
+    sum = 0
+
+    for(let i = 0; i < 10; i++) {
+      sum += nums[i] * (11 - i)
+    }
+
+    let sd = sum * 10 % 11
+    sd = sd === 10 ? 0 : sd
+    str += sd
+
+    return str
+  }
+
   generateRandomCpf(): string {
+    if(randomNumber(0, 100) < 80) return this._generateValidCpf()
+
     const n1 = randomNumber(100, 999)
     const n2 = randomNumber(100, 999)
     const n3 = randomNumber(100, 999)

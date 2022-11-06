@@ -1,21 +1,6 @@
 import mongoose from 'mongoose'
 import { getOrSetCache } from '../config/redis'
-
-export interface Transaction {
-  author: {
-    cpf: string
-    fullName: string
-    phoneNumber: string
-    birthDate: Date
-  }
-  creditCard: {
-    number: number
-    validity: Date
-    cvv: number
-  }
-  value: string,
-  status: "valid"
-}
+import { Transaction } from '../types/transaction'
 
 export class TransactionController {
   private _transactionCollection = mongoose.connection.collection<Transaction>('transactions')
